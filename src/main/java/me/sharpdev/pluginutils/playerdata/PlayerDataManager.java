@@ -2,12 +2,14 @@ package me.sharpdev.pluginutils.playerdata;
 
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import me.sharpdev.pluginutils.database.DatabaseException;
 import me.sharpdev.pluginutils.database.DocumentSerializer;
 import me.sharpdev.pluginutils.database.MongoDatabaseManager;
 import me.sharpdev.pluginutils.util.PlayerCache;
 import org.bson.Document;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
 
 public final class PlayerDataManager {
@@ -23,8 +25,8 @@ public final class PlayerDataManager {
     public void savePlayerData(UUID player) {
         PlayerData playerData = dataCache.get(player);
 
-        if(databaseManager.database.getCollection("playerdata").findOneAndReplace(Filters.eq("uuid", DocumentSerializer.serializeObject(player)),
-                DocumentSerializer.serializeObject(playerData), new FindOneAndReplaceOptions().upsert(true)) == null)throw new DatabaseException("error saving PlayerData for " + player.toString());
+        databaseManager.database.getCollection("playerdata").replaceOne(Filters.eq("uuid", DocumentSerializer.serializeObject(player)),
+                DocumentSerializer.serializeObject(playerData), new ReplaceOptions().upsert(true));
     }
 
     public void loadPlayerData(UUID player) {
@@ -37,6 +39,25 @@ public final class PlayerDataManager {
         for (UUID uuid : dataCache.keySet()) {
             savePlayerData(uuid);
         }
+    }
+
+    public PlayerData getPlayerData(UUID player) {
+        if(dataCache.containsKey(player)) return dataCache.get(player);
+        loadPlayerData(player);
+        if(!dataCache.containsKey(player)) {
+            try {
+                PlayerData playerData = getPlayerDataProvider().getConstructor().newInstance();
+                dataCache.put(player, playerData);
+                return playerData;
+            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return dataCache.get(player);
+    }
+
+    public void clear() {
+        dataCache.clear();
     }
 
     public static Class<? extends PlayerData> getPlayerDataProvider() {

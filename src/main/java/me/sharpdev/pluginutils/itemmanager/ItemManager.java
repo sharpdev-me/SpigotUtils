@@ -3,6 +3,7 @@ package me.sharpdev.pluginutils.itemmanager;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
 import com.mongodb.client.model.FindOneAndReplaceOptions;
+import com.mongodb.client.model.ReplaceOptions;
 import me.sharpdev.pluginutils.PluginUtils;
 import me.sharpdev.pluginutils.database.DatabaseException;
 import me.sharpdev.pluginutils.database.DocumentSerializer;
@@ -52,9 +53,7 @@ public final class ItemManager {
 
         ManagedItem managedItem = registeredItems.get(itemID);
 
-        if(collection.findOneAndReplace(findFilter(itemID), DocumentSerializer.serializeObject(managedItem), new FindOneAndReplaceOptions().upsert(true)) == null) {
-            throw new DatabaseException("error saving item " + itemID.toString());
-        }
+        collection.replaceOne(findFilter(itemID), DocumentSerializer.serializeObject(managedItem), new ReplaceOptions().upsert(true));
     }
 
     public void saveItem(ManagedItem item) {
@@ -75,6 +74,18 @@ public final class ItemManager {
         saveItem(itemID);
 
         return item;
+    }
+
+    public ManagedItem getItem(NamespacedKey itemID) {
+        return registeredItems.get(itemID);
+    }
+
+    public HashMap<NamespacedKey, ManagedItem> getRegisteredItems() {
+        return registeredItems;
+    }
+
+    public void clear() {
+        registeredItems.clear();
     }
 
     public static void setItemDataProvider(Class<? extends ItemData> provider) {
