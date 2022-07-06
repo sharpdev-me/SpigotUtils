@@ -2,37 +2,26 @@ package me.sharpdev.pluginutils.itemmanager;
 
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.model.Filters;
-import com.mongodb.client.model.FindOneAndReplaceOptions;
 import com.mongodb.client.model.ReplaceOptions;
 import me.sharpdev.pluginutils.PluginUtils;
-import me.sharpdev.pluginutils.database.DatabaseException;
 import me.sharpdev.pluginutils.database.DocumentSerializer;
 import me.sharpdev.pluginutils.database.MongoDatabaseManager;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 
 import java.util.HashMap;
 
 public final class ItemManager {
     private final MongoDatabaseManager databaseManager;
-    private final Plugin plugin;
 
     private static Class<? extends ItemData> itemDataProvider = ItemData.class;
 
     private final HashMap<NamespacedKey, ManagedItem> registeredItems = new HashMap<>();
 
-    public ItemManager(MongoDatabaseManager databaseManager, Plugin plugin) {
-        this.databaseManager = databaseManager;
-        this.plugin = plugin;
-    }
     public ItemManager(MongoDatabaseManager databaseManager) {
-        this(databaseManager, PluginUtils.getDefaultPlugin());
-    }
-    public ItemManager(Plugin plugin) {
-        this(PluginUtils.getDefaultDatabaseManager(), plugin);
+        this.databaseManager = databaseManager;
     }
     public ItemManager() {
         this(PluginUtils.getDefaultDatabaseManager());
