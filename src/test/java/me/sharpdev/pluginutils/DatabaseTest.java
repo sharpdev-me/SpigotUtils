@@ -8,6 +8,8 @@ import me.sharpdev.pluginutils.itemmanager.ItemManager;
 import me.sharpdev.pluginutils.itemmanager.ManagedItem;
 import me.sharpdev.pluginutils.playerdata.PlayerData;
 import me.sharpdev.pluginutils.playerdata.PlayerDataManager;
+import me.sharpdev.pluginutils.settings.Setting;
+import me.sharpdev.pluginutils.settings.SettingsManager;
 import org.bson.Document;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.*;
@@ -82,5 +84,21 @@ public class DatabaseTest {
         assertTrue(result instanceof TestPlayerData);
 
         assertEquals(playerData, result);
+    }
+
+    @Test
+    public void storeSetting() {
+        SettingsManager settingsManager = new SettingsManager(PluginUtils.getDefaultDatabaseManager());
+
+        String key = generateRandomAlphanumericString(17);
+
+        Setting setting = settingsManager.getSetting(key, generateRandomString(13));
+
+        settingsManager.saveSetting(setting.getName());
+        settingsManager.clear();
+
+        Setting result = settingsManager.getSetting(key);
+
+        assertEquals(setting, result);
     }
 }

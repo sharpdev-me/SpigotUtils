@@ -7,6 +7,7 @@ import me.sharpdev.pluginutils.itemmanager.ItemManager;
 import me.sharpdev.pluginutils.itemmanager.ManagedItem;
 import me.sharpdev.pluginutils.playerdata.PlayerData;
 import me.sharpdev.pluginutils.playerdata.PlayerDataManager;
+import me.sharpdev.pluginutils.settings.Setting;
 import org.bson.Document;
 import org.bukkit.NamespacedKey;
 import org.junit.jupiter.api.AfterEach;
@@ -54,5 +55,16 @@ public class SerializationTest {
         PlayerData result = DocumentSerializer.deserializeObject(PlayerDataManager.getPlayerDataProvider(), serialized);
 
         assertEquals(playerData, result);
+    }
+
+    @Test
+    public void serializeSetting() {
+        Setting mockSetting = new Setting(generateRandomAlphanumericString(36), generateRandomString(13));
+
+        Document serialized = DocumentSerializer.serializeObject(mockSetting);
+
+        Setting result = DocumentSerializer.deserializeObject(Setting.class, serialized);
+
+        assertEquals(mockSetting, result);
     }
 }
