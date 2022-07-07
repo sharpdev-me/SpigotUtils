@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 
 import java.lang.reflect.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,7 +23,7 @@ public final class DocumentSerializer {
 
     // Serializers for Spigot types
     static {
-        addSerializer(NamespacedKey.class, new Serializer<NamespacedKey>() {
+        addSerializer(NamespacedKey.class, new Serializer<>() {
             @Override
             public Document serialize(NamespacedKey object) {
                 return new Document("key", object.getNamespace()).append("value", object.getKey());
@@ -33,24 +34,29 @@ public final class DocumentSerializer {
                 return new NamespacedKey(document.getString("key"), document.getString("value"));
             }
         });
-        addSerializer(ItemStack.class, new Serializer<ItemStack>() {
+        addSerializer(ItemStack.class, new Serializer<>() {
             @Override
             public Document serialize(ItemStack object) {
                 Document document = new Document();
-                for (Map.Entry<String, Object> entry : object.serialize().entrySet()) {
-                    document.append(entry.getKey(), DocumentSerializer.serializeObject(entry.getValue()));
-                }
+
+                document.append("bytes", object.serializeAsBytes());
+
                 return document;
             }
 
             @Override
             public ItemStack deserialize(Document document) {
-                if(document == null) return null;
-                if(!document.containsKey("type")) return null;
-                return ItemStack.deserialize(document);
+                if (document == null) return null;
+                if (!document.containsKey("bytes")) return null;
+                List<Byte> byteList = document.getList("bytes", byte.class);
+                byte[] bytes = new byte[byteList.size()];
+                for (int i = 0; i < byteList.size(); i++) {
+                    bytes[i] = byteList.get(i);
+                }
+                return ItemStack.deserializeBytes(bytes);
             }
         });
-        addSerializer(UUID.class, new Serializer<UUID>() {
+        addSerializer(UUID.class, new Serializer<>() {
             @Override
             public Document serialize(UUID object) {
                 return new Document().append("lsb", object.getLeastSignificantBits()).append("msb", object.getMostSignificantBits());
