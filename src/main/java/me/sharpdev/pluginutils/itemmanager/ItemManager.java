@@ -6,10 +6,13 @@ import com.mongodb.client.model.ReplaceOptions;
 import me.sharpdev.pluginutils.PluginUtils;
 import me.sharpdev.pluginutils.database.DocumentSerializer;
 import me.sharpdev.pluginutils.database.MongoDatabaseManager;
+import me.sharpdev.pluginutils.nbt.KeyDataType;
+import me.sharpdev.pluginutils.util.ItemMetaRunnable;
 import org.bson.Document;
 import org.bson.conversions.Bson;
 import org.bukkit.NamespacedKey;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataContainer;
 
 import java.util.HashMap;
 
@@ -19,6 +22,8 @@ public final class ItemManager {
     private static Class<? extends ItemData> itemDataProvider = ItemData.class;
 
     private final HashMap<NamespacedKey, ManagedItem> registeredItems = new HashMap<>();
+
+    private static final NamespacedKey ID_KEY = new NamespacedKey("sharpdev", "ManagedItem_ID");
 
     public ItemManager(MongoDatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
@@ -59,6 +64,11 @@ public final class ItemManager {
         if(registeredItems.containsKey(itemID)) throw new ItemExistsException(itemID);
         ManagedItem item = new ManagedItem(itemID, itemStack, itemData);
 
+        if(itemStack != null) ItemMetaRunnable.doItemMeta(itemStack, (meta) -> {
+            PersistentDataContainer container = meta.getPersistentDataContainer();
+            container.set(ID_KEY, new KeyDataType(), itemID);
+        });
+
         registeredItems.put(itemID, item);
         saveItem(itemID);
 
@@ -67,6 +77,22 @@ public final class ItemManager {
 
     public ManagedItem getItem(NamespacedKey itemID) {
         return registeredItems.get(itemID);
+    }
+
+    public ManagedItem getItem(ItemStack itemStack) {
+        return getItem(getItemID(itemStack));
+    }
+
+    public boolean isManagedItem(ItemStack itemStack) {
+        return isManagedItem(getItemID(itemStack));
+    }
+
+    public boolean isManagedItem(NamespacedKey itemID) {
+        return registeredItems.containsKey(itemID);
+    }
+
+    public NamespacedKey getItemID(ItemStack itemStack) {
+        return itemStack.getItemMeta().getPersistentDataContainer().get(ID_KEY, new KeyDataType());
     }
 
     public HashMap<NamespacedKey, ManagedItem> getRegisteredItems() {

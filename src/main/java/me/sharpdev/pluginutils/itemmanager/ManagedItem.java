@@ -3,6 +3,8 @@ package me.sharpdev.pluginutils.itemmanager;
 import me.sharpdev.pluginutils.database.DocumentSerializer;
 import org.bson.Document;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.Objects;
@@ -48,6 +50,18 @@ public final class ManagedItem {
         this.itemID = itemID;
         this.itemStack = itemStack;
         this.itemData = itemData;
+    }
+
+    public ItemStack give(Inventory inventory) {
+        ItemStack clone = itemStack.clone();
+
+        inventory.addItem(clone);
+
+        return clone;
+    }
+
+    public ItemStack give(Player player) {
+        return give(player.getInventory());
     }
 
     public NamespacedKey getItemID() {
