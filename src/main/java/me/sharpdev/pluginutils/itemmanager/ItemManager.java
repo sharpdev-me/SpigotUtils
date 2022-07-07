@@ -23,7 +23,7 @@ public final class ItemManager {
 
     private final HashMap<NamespacedKey, ManagedItem> registeredItems = new HashMap<>();
 
-    private static final NamespacedKey ID_KEY = new NamespacedKey("sharpdev", "ManagedItem_ID");
+    private static final NamespacedKey ID_KEY = new NamespacedKey("sharpdev", "manageditem_id");
 
     public ItemManager(MongoDatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
